@@ -486,7 +486,9 @@ endif
 # include files which define additional targets
 #-------------------------------------------------
 
-all: maketree buildtools emulator tools
+#all: maketree buildtools emulator tools
+
+all: maketree buildtools emulator
 
 
 
@@ -513,7 +515,7 @@ include $(SRC)/emu/emu.mak
 include $(SRC)/lib/lib.mak
 include $(SRC)/build/build.mak
 -include $(SRC)/osd/$(CROSS_BUILD_OSD)/build.mak
-include $(SRC)/tools/tools.mak
+#include $(SRC)/tools/tools.mak
 
 # combine the various definitions to one
 CDEFS = $(DEFS) $(COREDEFS) $(SOUNDDEFS)

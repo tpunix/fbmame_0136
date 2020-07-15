@@ -1,52 +1,26 @@
-# Prerequisites
-*.d
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+/cfg
+/nvram
+/snap
 
-# Linker output
-*.ilk
-*.map
-*.exp
+roms
+/obj
 
-# Precompiled Headers
-*.gch
-*.pch
+config.mk
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+mame
+mame64
+mametiny
+mametiny64
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+chdman
+jedutil
+ldresample
+ldverify
+regrep
+romcmp
+split
+src2html
+srcclean
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
-
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf

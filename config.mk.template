@@ -1,0 +1,35 @@
+
+###############################################################################
+# user edit area
+
+
+#CROSS_BUILD = 1
+
+ifeq ($(CROSS_BUILD), 1)
+ARCH = arm64
+CROSS = /f/h3/buildroot-2020.02.2/output/host/bin/aarch64-linux-gnu-
+
+endif
+
+PTR64 = 1
+
+
+###############################################################################
+# fix area
+
+
+TARGET = mame
+SUBTARGET = tiny
+OSD = osdmini
+
+
+FORCE_DRC_C_BACKEND = 1
+
+#DEBUG = 1
+SYMBOLS = 1
+OPTIMIZE = 3
+
+
+# end
+###############################################################################
+

@@ -8,6 +8,11 @@
 ifeq ($(CROSS_BUILD), 1)
 ARCH = arm64
 CROSS = /f/h3/buildroot-2020.02.2/output/host/bin/aarch64-linux-gnu-
+ARCHOPTS =
+
+else
+
+ARCHOPTS = -msse4
 
 endif
 

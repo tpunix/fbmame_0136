@@ -1402,6 +1402,12 @@ void render_target_set_max_texture_size(render_target *target, int maxwidth, int
     the current layout and proposed new parameters
 -------------------------------------------------*/
 
+float render_get_effective_aspect(render_target *target)
+{
+	return ((target->layerconfig & LAYER_CONFIG_ZOOM_TO_SCREEN) && target->curview->screens > 0) ? target->curview->scraspect : target->curview->aspect;
+}
+
+
 void render_target_compute_visible_area(render_target *target, INT32 target_width, INT32 target_height, float target_pixel_aspect, int target_orientation, INT32 *visible_width, INT32 *visible_height)
 {
 	float width, height;

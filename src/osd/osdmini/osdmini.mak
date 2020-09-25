@@ -66,9 +66,19 @@ OSDCOREOBJS = \
 
 OSDOBJS = \
 	$(MINIOBJ)/minimain.o \
+	$(MINIOBJ)/video.o \
 	$(MINIOBJ)/video_fbcon.o \
+	$(MINIOBJ)/input_vt.o \
+	$(MINIOBJ)/input_remote.o \
 	$(MINIOBJ)/alsa_sound.o \
+	$(MINIOBJ)/render.o \
+	$(MINIOBJ)/mresize.o \
 
+ifeq ($(ARCH), arm64)
+OSDOBJS += $(MINIOBJ)/neon64_mresize.o
+endif
+
+LIBS += -lm -lpthread -lasound -lrt
 
 
 #-------------------------------------------------
@@ -79,4 +89,8 @@ $(LIBOCORE): $(OSDCOREOBJS)
 
 $(LIBOSD): $(OSDOBJS)
 
-LIBS += -lm -lpthread -lasound
+$(MINIOBJ)/%.o: $(MINISRC)/%.s
+	@echo Compiling $<...
+	$(CC) -Wall -O3 -c $< -o $@
+
+

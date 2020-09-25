@@ -584,7 +584,7 @@ static const input_type_desc core_types[] =
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_SHOW_FPS,         "Show FPS",               SEQ_DEF_5(KEYCODE_F11, SEQCODE_NOT, KEYCODE_LCONTROL, SEQCODE_NOT, KEYCODE_LSHIFT) )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_SNAPSHOT,         "Save Snapshot",          SEQ_DEF_3(KEYCODE_F12, SEQCODE_NOT, KEYCODE_LSHIFT) )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_RECORD_MOVIE,     "Record Movie",           SEQ_DEF_2(KEYCODE_F12, KEYCODE_LSHIFT) )
-	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_TOGGLE_CHEAT,     "Toggle Cheat",           SEQ_DEF_1(KEYCODE_F6) )
+	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_TOGGLE_CHEAT,     "Toggle Cheat",           SEQ_DEF_0 )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_UP,               "UI Up",                  SEQ_DEF_3(KEYCODE_UP, SEQCODE_OR, INDEXED(JOYCODE_Y_UP_SWITCH, 0)) )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_DOWN,             "UI Down",                SEQ_DEF_3(KEYCODE_DOWN, SEQCODE_OR, INDEXED(JOYCODE_Y_DOWN_SWITCH, 0)) )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_LEFT,             "UI Left",                SEQ_DEF_3(KEYCODE_LEFT, SEQCODE_OR, INDEXED(JOYCODE_X_LEFT_SWITCH, 0)) )
@@ -608,8 +608,8 @@ static const input_type_desc core_types[] =
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_PASTE,            "UI Paste Text",          SEQ_DEF_2(KEYCODE_SCRLOCK, KEYCODE_LSHIFT) )
 #endif /* MESS */
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_TOGGLE_DEBUG,     "Toggle Debugger",        SEQ_DEF_1(KEYCODE_F5) )
-	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_SAVE_STATE,       "Save State",             SEQ_DEF_2(KEYCODE_F7, KEYCODE_LSHIFT) )
-	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_LOAD_STATE,       "Load State",             SEQ_DEF_3(KEYCODE_F7, SEQCODE_NOT, KEYCODE_LSHIFT) )
+	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_SAVE_STATE,       "Save State",             SEQ_DEF_1(KEYCODE_F6) )
+	INPUT_PORT_DIGITAL_TYPE( 0, UI,      UI_LOAD_STATE,       "Load State",             SEQ_DEF_1(KEYCODE_F7) )
 
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      OSD_1,               NULL,                     SEQ_DEF_0 )
 	INPUT_PORT_DIGITAL_TYPE( 0, UI,      OSD_2,               NULL,                     SEQ_DEF_0 )

@@ -682,6 +682,20 @@ void mame_schedule_save(running_machine *machine, const char *filename)
 	mame_pause(machine, FALSE);
 }
 
+void mame_immediate_save(running_machine *machine, const char *filename)
+{
+	mame_private *mame = machine->mame_data;
+
+	/* specify the filename to save or load */
+	set_saveload_filename(machine, filename);
+
+	/* note the start time and set a timer for the next timeslice to actually schedule it */
+	mame->saveload_schedule_time = timer_get_time(machine);
+
+	handle_save(machine);
+}
+
+
 
 /*-------------------------------------------------
     mame_schedule_load - schedule a load to
@@ -701,6 +715,19 @@ void mame_schedule_load(running_machine *machine, const char *filename)
 
 	/* we can't be paused since we need to clear out anonymous timers */
 	mame_pause(machine, FALSE);
+}
+
+void mame_immediate_load(running_machine *machine, const char *filename)
+{
+	mame_private *mame = machine->mame_data;
+
+	/* specify the filename to save or load */
+	set_saveload_filename(machine, filename);
+
+	/* note the start time and set a timer for the next timeslice to actually schedule it */
+	mame->saveload_schedule_time = timer_get_time(machine);
+
+	handle_load(machine);
 }
 
 
@@ -1642,6 +1669,8 @@ static void free_callback_list(callback_item **cb)
     SAVE/RESTORE
 ***************************************************************************/
 
+int saveload_state;
+
 /*-------------------------------------------------
     saveload_init - initialize the save/load logic
 -------------------------------------------------*/
@@ -1670,6 +1699,8 @@ static void handle_save(running_machine *machine)
 	file_error filerr;
 	mame_file *file;
 
+	saveload_state = -1;
+
 	/* if no name, bail */
 	if (mame->saveload_pending_file == NULL)
 	{
@@ -1684,6 +1715,7 @@ static void handle_save(running_machine *machine)
 		if (attotime_sub(timer_get_time(machine), mame->saveload_schedule_time).seconds > 0)
 		{
 			popmessage("Unable to save due to pending anonymous timers. See error.log for details.");
+			saveload_state = -2;
 			goto cancel;
 		}
 		return;
@@ -1704,10 +1736,12 @@ static void handle_save(running_machine *machine)
 		{
 			case STATERR_ILLEGAL_REGISTRATIONS:
 				popmessage("Error: Unable to save state due to illegal registrations. See error.log for details.");
+				saveload_state = -3;
 				break;
 
 			case STATERR_WRITE_ERROR:
 				popmessage("Error: Unable to save state due to a write error. Verify there is enough disk space.");
+				saveload_state = -6;
 				break;
 
 			case STATERR_NONE:
@@ -1715,9 +1749,11 @@ static void handle_save(running_machine *machine)
 					popmessage("State successfully saved.\nWarning: Save states are not officially supported for this game.");
 				else
 					popmessage("State successfully saved.");
+				saveload_state = 0;
 				break;
 
 			default:
+				saveload_state = -3;
 				popmessage("Error: Unknwon error during state save.");
 				break;
 		}
@@ -1727,9 +1763,10 @@ static void handle_save(running_machine *machine)
 		if (staterr != STATERR_NONE)
 			osd_rmfile(astring_c(fullname));
 		astring_free(fullname);
-	}
-	else
+	} else {
 		popmessage("Error: Failed to create save state file.");
+		saveload_state = -7;
+	}
 
 	/* unschedule the save */
 cancel:
@@ -1750,6 +1787,8 @@ static void handle_load(running_machine *machine)
 	file_error filerr;
 	mame_file *file;
 
+	saveload_state = -1;
+
 	/* if no name, bail */
 	if (mame->saveload_pending_file == NULL)
 	{
@@ -1765,6 +1804,7 @@ static void handle_load(running_machine *machine)
 		if (attotime_sub(timer_get_time(machine), mame->saveload_schedule_time).seconds > 0)
 		{
 			popmessage("Unable to load due to pending anonymous timers. See error.log for details.");
+			saveload_state = -2;
 			goto cancel;
 		}
 		return;
@@ -1784,14 +1824,17 @@ static void handle_load(running_machine *machine)
 		{
 			case STATERR_ILLEGAL_REGISTRATIONS:
 				popmessage("Error: Unable to load state due to illegal registrations. See error.log for details.");
+				saveload_state = -3;
 				break;
 
 			case STATERR_INVALID_HEADER:
 				popmessage("Error: Unable to load state due to an invalid header. Make sure the save state is correct for this game.");
+				saveload_state = -4;
 				break;
 
 			case STATERR_READ_ERROR:
 				popmessage("Error: Unable to load state due to a read error (file is likely corrupt).");
+				saveload_state = -5;
 				break;
 
 			case STATERR_NONE:
@@ -1799,18 +1842,21 @@ static void handle_load(running_machine *machine)
 					popmessage("State successfully loaded.\nWarning: Save states are not officially supported for this game.");
 				else
 					popmessage("State successfully loaded.");
+				saveload_state = 0;
 				break;
 
 			default:
+				saveload_state = -3;
 				popmessage("Error: Unknwon error during state load.");
 				break;
 		}
 
 		/* close the file */
 		mame_fclose(file);
-	}
-	else
+	} else {
 		popmessage("Error: Failed to open save state file.");
+		saveload_state = -7;
+	}
 
 	/* unschedule the load */
 cancel:

@@ -356,8 +356,10 @@ CCOMFLAGS += -O$(OPTIMIZE)
 # if we are optimizing, include optimization options
 # and make all errors into warnings
 ifneq ($(OPTIMIZE),0)
-CCOMFLAGS += -fno-strict-aliasing $(ARCHOPTS)
+CCOMFLAGS += -fno-strict-aliasing
 endif
+
+CCOMFLAGS += $(ARCHOPTS)
 
 # add a basic set of warnings
 CCOMFLAGS += \
@@ -367,7 +369,8 @@ CCOMFLAGS += \
 	-Wformat-security \
 	-Wwrite-strings \
 	-Wno-unused-but-set-variable \
-	-Wno-sign-compare
+	-Wno-sign-compare \
+	-Wno-declaration-after-statement
 
 # warnings only applicable to C compiles
 CONLYFLAGS += \
@@ -377,7 +380,7 @@ CONLYFLAGS += \
 
 # this warning is not supported on the os2 compilers
 ifneq ($(TARGETOS),os2)
-CONLYFLAGS += -Wdeclaration-after-statement
+#CONLYFLAGS += -Wdeclaration-after-statement
 endif
 
 

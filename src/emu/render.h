@@ -340,6 +340,8 @@ render_target *render_get_ui_target(void);
 /* return the aspect ratio for UI fonts */
 float render_get_ui_aspect(void);
 
+float render_get_effective_aspect(render_target *target);
+
 
 
 /* ----- render target management ----- */

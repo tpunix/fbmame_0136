@@ -3,24 +3,17 @@
 /nvram
 /snap
 
-roms
+/roms
 /obj
 
-config.mk
+/config.mk
 
-mame
-mame64
-mametiny
-mametiny64
+/mame
+/mame64
+/mametiny
+/mametiny64
 
-chdman
-jedutil
-ldresample
-ldverify
-regrep
-romcmp
-split
-src2html
-srcclean
+/ftwin
+/mmres
 
 

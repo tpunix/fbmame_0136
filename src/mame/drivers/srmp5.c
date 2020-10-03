@@ -41,12 +41,17 @@ This is not a bug (real machine behaves the same).
 #include "sound/st0016.h"
 #include "includes/st0016.h"
 
-#define DEBUG_CHAR
+//#define DEBUG_CHAR
+#define BG_ENABLE
+
 static UINT32 databank;
 static UINT32 srmp5_vidregs[0x120 / 4];
 static UINT16 *tileram, *palram;
 static UINT16 *sprram;
 static UINT8 cmd1 = 0, cmd2 = 0, cmd_stat = 0;
+
+static UINT8 *usr2_mem;
+static UINT32 databank_base;
 
 #ifdef DEBUG_CHAR
 static UINT8 tileduty[0x2000];
@@ -85,26 +90,27 @@ static VIDEO_UPDATE( srmp5 )
 #ifdef BG_ENABLE
 	UINT8 tile_width  = (srmp5_vidregs[2] >> 0) & 0xFF;
 	UINT8 tile_height = (srmp5_vidregs[2] >> 8) & 0xFF;
-	if(tile_width && tile_height)
-	{
+	int first = 1;
+	if(tile_width && tile_height){
 		// 16x16 tile
 		UINT16 *map = &sprram[0x2000];
-		for(yw = 0; yw < tile_height; yw++)
-		{
-			for(xw = 0; xw < tile_width; xw++)
-			{
+		for(yw = 0; yw < tile_height; yw++){
+			for(xw = 0; xw < tile_width; xw++){
 				UINT16 tile = map[yw * 128 + xw * 2];
 				if(tile >= 0x2000) continue;
 
 				address = tile * SPRITE_DATA_GRANULARITY;
-				for(y = 0; y < 16; y++)
-				{
-					for(x = 0; x < 16; x++)
-					{
+				for(y = 0; y < 16; y++){
+					for(x = 0; x < 16; x++){
 						UINT8 pen = pixels[address];
-						if(pen)
-						{
+						if(pen){
 							UINT16 pixdata=palram[pen];
+							if(first){
+								if(pixdata!=0x0100){
+									goto _no_bg;
+								}
+								first = 0;
+							}
 							*BITMAP_ADDR32(bitmap, yw * 16 + y, xw * 16 + x) = ((pixdata&0x7c00)>>7) | ((pixdata&0x3e0)<<6) | ((pixdata&0x1f)<<19);
 						}
 						address++;
@@ -115,8 +121,12 @@ static VIDEO_UPDATE( srmp5 )
 	}
 	else
 #endif
+	{
+_no_bg:
 		bitmap_fill(bitmap,cliprect,0);
+	}
 
+	//UINT64 tm = osd_ticks();
 	while((sprite_list[SUBLIST_OFFSET]&SPRITE_LIST_END_MARKER)==0 && sprite_list<sprite_list_end)
 	{
 		UINT16 *sprite_sublist=&sprram[sprite_list[SUBLIST_OFFSET]<<SUBLIST_OFFSET_SHIFT];
@@ -129,6 +139,9 @@ static VIDEO_UPDATE( srmp5 )
 			global_y=(INT16)sprite_list[SPRITE_GLOBAL_Y];
 			while(sublist_length)
 			{
+				UINT16 sppal = sprite_sublist[SPRITE_PALETTE];
+				UINT16 sppal_idx = (sppal&0xff)<<8;
+
 				x=(INT16)sprite_sublist[SPRITE_LOCAL_X]+global_x;
 				y=(INT16)sprite_sublist[SPRITE_LOCAL_Y]+global_y;
 				width =(sprite_sublist[SPRITE_SIZE]>> 4)&0xf;
@@ -139,30 +152,33 @@ static VIDEO_UPDATE( srmp5 )
 
 				address=(sprite_sublist[SPRITE_TILE] & ~(sprite_sublist[SPRITE_SIZE] >> 11 & 7))*SPRITE_DATA_GRANULARITY;
 				y -= (height + 1) * (sizey + 1)-1;
-				for(xw=0;xw<=width;xw++)
-				{
-					xb = (sprite_sublist[SPRITE_PALETTE] & 0x8000) ? (width-xw)*(sizex+1)+x: xw*(sizex+1)+x;
-					for(yw=0;yw<=height;yw++)
-					{
+				for(xw=0;xw<=width;xw++){
+					xb = (sppal & 0x8000) ? (width-xw)*(sizex+1)+x: xw*(sizex+1)+x;
+					for(yw=0;yw<=height;yw++){
 						yb = yw*(sizey+1)+y;
-						for(ys=0;ys<=sizey;ys++)
-						{
-							ys2 = (sprite_sublist[SPRITE_PALETTE] & 0x4000) ? ys : (sizey - ys);
-							for(xs=0;xs<=sizex;xs++)
-							{
-								UINT8 pen=pixels[address&(0x100000-1)];
-								xs2 = (sprite_sublist[SPRITE_PALETTE] & 0x8000) ? (sizex - xs) : xs;
-								if(pen)
-								{
-									if(xb+xs2<=visarea->max_x && xb+xs2>=visarea->min_x && yb+ys2<=visarea->max_y && yb+ys2>=visarea->min_y )
-									{
-										UINT16 pixdata=palram[pen+((sprite_sublist[SPRITE_PALETTE]&0xff)<<8)];
-										*BITMAP_ADDR32(bitmap, yb+ys2, xb+xs2) = ((pixdata&0x7c00)>>7) | ((pixdata&0x3e0)<<6) | ((pixdata&0x1f)<<19);
+
+						for(ys=0;ys<=sizey;ys++){
+							ys2 = (sppal & 0x4000) ? ys : (sizey - ys);
+							ys2 += yb;
+							if(ys2<=visarea->max_y && ys2>=visarea->min_y ){
+								UINT32 *dst = (UINT32*)(bitmap->base) + ys2*(bitmap->rowpixels);
+								for(xs=0;xs<=sizex;xs++){
+									xs2 = (sppal & 0x8000) ? (sizex - xs) : xs;
+									xs2 += xb;
+									if(xs2<=visarea->max_x){
+										UINT8 pen=pixels[address];
+										if(pen){
+											UINT16 pixdata=palram[pen+sppal_idx];
+											*(dst+xs2) = ((pixdata&0x7c00)>>7) | ((pixdata&0x3e0)<<6) | ((pixdata&0x1f)<<19);
+										}
 									}
+									++address;
 								}
-								++address;
+							}else{
+								address += sizex+1;
 							}
 						}
+
 					}
 				}
 				sprite_sublist+=SPRITE_SUBLIST_ENTRY_LENGTH;
@@ -185,6 +201,9 @@ static VIDEO_UPDATE( srmp5 )
 		}
 	}
 #endif
+
+	//tm = osd_ticks()-tm;
+	//printf("srmp5: %d\n", (int)tm);
 	return 0;
 }
 
@@ -201,6 +220,7 @@ static WRITE32_HANDLER(srmp5_palette_w)
 static WRITE32_HANDLER(bank_w)
 {
 	COMBINE_DATA(&databank);
+	databank_base = ((databank>>4)&0xf)*0x100000;
 }
 
 static READ32_HANDLER(tileram_r)
@@ -229,10 +249,15 @@ static WRITE32_HANDLER(spr_w)
 static READ32_HANDLER(data_r)
 {
 	UINT32 data;
+#if 0
 	const UINT8 *usr = memory_region(space->machine, "user2");
 	data=((databank>>4)&0xf)*0x100000; //guess
 	data=usr[data+offset*2]+usr[data+offset*2+1]*256;
 	return data|(data<<16);
+#else
+	data = *(UINT16*)(usr2_mem + databank_base + offset*2);
+	return data;
+#endif
 }
 
 static UINT8 input_select = 0;
@@ -481,6 +506,7 @@ static const r3000_cpu_core config =
 	4096	/* data cache size */
 };
 
+#ifdef DEBUG_CHAR
 static const gfx_layout tile_16x8x8_layout =
 {
 	16,8,
@@ -509,6 +535,7 @@ static GFXDECODE_START( srmp5 )
 	GFXDECODE_ENTRY( "gfx1", 0, tile_16x8x8_layout,  0x0, 0x800  )
 //  GFXDECODE_ENTRY( "gfx1", 0, tile_16x16x8_layout, 0x0, 0x800  )
 GFXDECODE_END
+#endif
 
 static MACHINE_DRIVER_START( srmp5 )
 	/* basic machine hardware */
@@ -517,7 +544,7 @@ static MACHINE_DRIVER_START( srmp5 )
 	MDRV_CPU_IO_MAP(st0016_io)
 	MDRV_CPU_VBLANK_INT("screen", irq0_line_hold)
 
-	MDRV_CPU_ADD("sub", R3000LE, 15000000)
+	MDRV_CPU_ADD("sub", R3000LE, 16500000)
 	MDRV_CPU_CONFIG(config)
 	MDRV_CPU_PROGRAM_MAP(srmp5_mem)
 	//256???K??
@@ -527,7 +554,7 @@ static MACHINE_DRIVER_START( srmp5 )
 
 	/* video hardware */
 	MDRV_SCREEN_ADD("screen", RASTER)
-	MDRV_SCREEN_REFRESH_RATE(50)
+	MDRV_SCREEN_REFRESH_RATE(60)
 	MDRV_SCREEN_FORMAT(BITMAP_FORMAT_RGB32)
 	MDRV_SCREEN_SIZE(96*8, 64*8)
 	MDRV_SCREEN_VISIBLE_AREA(0*8, 42*8-1, 2*8, 32*8-1)
@@ -582,6 +609,7 @@ static DRIVER_INIT(srmp5)
 #ifdef DEBUG_CHAR
 	memset(tileduty, 1, 0x2000);
 #endif
+	usr2_mem = memory_region(machine, "user2");
 }
 
 GAME( 1994, srmp5,	0,	  srmp5,    srmp5,    srmp5,    ROT0, "Seta",  "Super Real Mahjong P5", GAME_IMPERFECT_GRAPHICS)

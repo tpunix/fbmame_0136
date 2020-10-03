@@ -73,7 +73,7 @@ static STREAM_UPDATE( st0016_update )
 	INT32 mix[48000*2];
 	INT32 *mixp;
 	INT16 sample;
-	int sptr, eptr, freq, lsptr, leptr;
+	int sptr, eptr, freq, lsptr, leptr, vol0, vol1;
 
 	memset(mix, 0, sizeof(mix[0])*samples*2);
 
@@ -90,13 +90,19 @@ static STREAM_UPDATE( st0016_update )
 			freq = slot[0x11]<<8 | slot[0x10];
 			lsptr = slot[0x06]<<16 | slot[0x05]<<8 | slot[0x04];
 			leptr = slot[0x0a]<<16 | slot[0x09]<<8 | slot[0x08];
+			vol0 = slot[0x14];
+			vol1 = slot[0x15];
+			if(freq==0x4ae9){
+				vol0 *= 4;
+				vol1 *= 4;
+			}
 
 			for (snum = 0; snum < samples; snum++)
 			{
 				sample = sound_ram[(sptr + info->vpos[v])&0x1fffff]<<8;
 
-				*mixp++ += (sample * (char)slot[0x14]) >> 8;
-				*mixp++ += (sample * (char)slot[0x15]) >> 8;
+				*mixp++ += (sample * vol0) >> 8;
+				*mixp++ += (sample * vol1) >> 8;
 
 				info->frac[v] += freq;
 				info->vpos[v] += (info->frac[v]>>16);
@@ -147,7 +153,8 @@ static DEVICE_START( st0016 )
 
 	info->sound_ram = intf->p_soundram;
 
-	info->stream = stream_create(device, 0, 2, 44100, info, st0016_update);
+	//info->stream = stream_create(device, 0, 2, 44100, info, st0016_update);
+	info->stream = stream_create(device, 0, 2, 52430, info, st0016_update);
 }
 
 

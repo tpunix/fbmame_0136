@@ -729,20 +729,20 @@ static CPU_EXECUTE( r3000 )
 			case 0x00:	/* SPECIAL */
 				switch (op & 63)
 				{
-					case 0x00:	/* SLL */		if (RDREG) r3000->RDVAL = r3000->RTVAL << SHIFT;						break;
-					case 0x02:	/* SRL */		if (RDREG) r3000->RDVAL = r3000->RTVAL >> SHIFT;						break;
-					case 0x03:	/* SRA */		if (RDREG) r3000->RDVAL = (INT32)r3000->RTVAL >> SHIFT;					break;
-					case 0x04:	/* SLLV */		if (RDREG) r3000->RDVAL = r3000->RTVAL << (r3000->RSVAL & 31);			break;
-					case 0x06:	/* SRLV */		if (RDREG) r3000->RDVAL = r3000->RTVAL >> (r3000->RSVAL & 31);			break;
-					case 0x07:	/* SRAV */		if (RDREG) r3000->RDVAL = (INT32)r3000->RTVAL >> (r3000->RSVAL & 31);	break;
+					case 0x00:	/* SLL */		r3000->RDVAL = r3000->RTVAL << SHIFT;						break;
+					case 0x02:	/* SRL */		r3000->RDVAL = r3000->RTVAL >> SHIFT;						break;
+					case 0x03:	/* SRA */		r3000->RDVAL = (INT32)r3000->RTVAL >> SHIFT;					break;
+					case 0x04:	/* SLLV */		r3000->RDVAL = r3000->RTVAL << (r3000->RSVAL & 31);			break;
+					case 0x06:	/* SRLV */		r3000->RDVAL = r3000->RTVAL >> (r3000->RSVAL & 31);			break;
+					case 0x07:	/* SRAV */		r3000->RDVAL = (INT32)r3000->RTVAL >> (r3000->RSVAL & 31);	break;
 					case 0x08:	/* JR */		SETPC(r3000, r3000->RSVAL);												break;
 					case 0x09:	/* JALR */		SETPCL(r3000, r3000->RSVAL, RDREG);										break;
 					case 0x0c:	/* SYSCALL */	generate_exception(r3000, EXCEPTION_SYSCALL);							break;
 					case 0x0d:	/* BREAK */		generate_exception(r3000, EXCEPTION_BREAK);								break;
 					case 0x0f:	/* SYNC */		invalid_instruction(r3000, op);											break;
-					case 0x10:	/* MFHI */		if (RDREG) r3000->RDVAL = r3000->hi;									break;
+					case 0x10:	/* MFHI */		r3000->RDVAL = r3000->hi;									break;
 					case 0x11:	/* MTHI */		r3000->hi = r3000->RSVAL;												break;
-					case 0x12:	/* MFLO */		if (RDREG) r3000->RDVAL = r3000->lo;									break;
+					case 0x12:	/* MFLO */		r3000->RDVAL = r3000->lo;									break;
 					case 0x13:	/* MTLO */		r3000->lo = r3000->RSVAL;												break;
 					case 0x18:	/* MULT */
 						temp64 = (INT64)(INT32)r3000->RSVAL * (INT64)(INT32)r3000->RTVAL;
@@ -776,18 +776,18 @@ static CPU_EXECUTE( r3000 )
 						if (ENABLE_OVERFLOWS && r3000->RSVAL > ~r3000->RTVAL) generate_exception(r3000, EXCEPTION_OVERFLOW);
 						else r3000->RDVAL = r3000->RSVAL + r3000->RTVAL;
 						break;
-					case 0x21:	/* ADDU */		if (RDREG) r3000->RDVAL = r3000->RSVAL + r3000->RTVAL;					break;
+					case 0x21:	/* ADDU */		r3000->RDVAL = r3000->RSVAL + r3000->RTVAL;					break;
 					case 0x22:	/* SUB */
 						if (ENABLE_OVERFLOWS && r3000->RSVAL < r3000->RTVAL) generate_exception(r3000, EXCEPTION_OVERFLOW);
 						else r3000->RDVAL = r3000->RSVAL - r3000->RTVAL;
 						break;
-					case 0x23:	/* SUBU */		if (RDREG) r3000->RDVAL = r3000->RSVAL - r3000->RTVAL;					break;
-					case 0x24:	/* AND */		if (RDREG) r3000->RDVAL = r3000->RSVAL & r3000->RTVAL;					break;
-					case 0x25:	/* OR */		if (RDREG) r3000->RDVAL = r3000->RSVAL | r3000->RTVAL;					break;
-					case 0x26:	/* XOR */		if (RDREG) r3000->RDVAL = r3000->RSVAL ^ r3000->RTVAL;					break;
-					case 0x27:	/* NOR */		if (RDREG) r3000->RDVAL = ~(r3000->RSVAL | r3000->RTVAL);				break;
-					case 0x2a:	/* SLT */		if (RDREG) r3000->RDVAL = (INT32)r3000->RSVAL < (INT32)r3000->RTVAL;	break;
-					case 0x2b:	/* SLTU */		if (RDREG) r3000->RDVAL = (UINT32)r3000->RSVAL < (UINT32)r3000->RTVAL;	break;
+					case 0x23:	/* SUBU */		r3000->RDVAL = r3000->RSVAL - r3000->RTVAL;					break;
+					case 0x24:	/* AND */		r3000->RDVAL = r3000->RSVAL & r3000->RTVAL;					break;
+					case 0x25:	/* OR */		r3000->RDVAL = r3000->RSVAL | r3000->RTVAL;					break;
+					case 0x26:	/* XOR */		r3000->RDVAL = r3000->RSVAL ^ r3000->RTVAL;					break;
+					case 0x27:	/* NOR */		r3000->RDVAL = ~(r3000->RSVAL | r3000->RTVAL);				break;
+					case 0x2a:	/* SLT */		r3000->RDVAL = (INT32)r3000->RSVAL < (INT32)r3000->RTVAL;	break;
+					case 0x2b:	/* SLTU */		r3000->RDVAL = (UINT32)r3000->RSVAL < (UINT32)r3000->RTVAL;	break;
 					case 0x30:	/* TEQ */		invalid_instruction(r3000, op);											break;
 					case 0x31:	/* TGEU */		invalid_instruction(r3000, op);											break;
 					case 0x32:	/* TLT */		invalid_instruction(r3000, op);											break;
@@ -829,13 +829,13 @@ static CPU_EXECUTE( r3000 )
 				if (ENABLE_OVERFLOWS && r3000->RSVAL > ~SIMMVAL) generate_exception(r3000, EXCEPTION_OVERFLOW);
 				else if (RTREG) r3000->RTVAL = r3000->RSVAL + SIMMVAL;
 				break;
-			case 0x09:	/* ADDIU */		if (RTREG) r3000->RTVAL = r3000->RSVAL + SIMMVAL;								break;
-			case 0x0a:	/* SLTI */		if (RTREG) r3000->RTVAL = (INT32)r3000->RSVAL < (INT32)SIMMVAL;					break;
-			case 0x0b:	/* SLTIU */		if (RTREG) r3000->RTVAL = (UINT32)r3000->RSVAL < (UINT32)SIMMVAL;				break;
-			case 0x0c:	/* ANDI */		if (RTREG) r3000->RTVAL = r3000->RSVAL & UIMMVAL;								break;
-			case 0x0d:	/* ORI */		if (RTREG) r3000->RTVAL = r3000->RSVAL | UIMMVAL;								break;
-			case 0x0e:	/* XORI */		if (RTREG) r3000->RTVAL = r3000->RSVAL ^ UIMMVAL;								break;
-			case 0x0f:	/* LUI */		if (RTREG) r3000->RTVAL = UIMMVAL << 16;										break;
+			case 0x09:	/* ADDIU */		r3000->RTVAL = r3000->RSVAL + SIMMVAL;								break;
+			case 0x0a:	/* SLTI */		r3000->RTVAL = (INT32)r3000->RSVAL < (INT32)SIMMVAL;					break;
+			case 0x0b:	/* SLTIU */		r3000->RTVAL = (UINT32)r3000->RSVAL < (UINT32)SIMMVAL;				break;
+			case 0x0c:	/* ANDI */		r3000->RTVAL = r3000->RSVAL & UIMMVAL;								break;
+			case 0x0d:	/* ORI */		r3000->RTVAL = r3000->RSVAL | UIMMVAL;								break;
+			case 0x0e:	/* XORI */		r3000->RTVAL = r3000->RSVAL ^ UIMMVAL;								break;
+			case 0x0f:	/* LUI */		r3000->RTVAL = UIMMVAL << 16;										break;
 			case 0x10:	/* COP0 */		handle_cop0(r3000, op);															break;
 			case 0x11:	/* COP1 */		handle_cop1(r3000, op);															break;
 			case 0x12:	/* COP2 */		handle_cop2(r3000, op);															break;
@@ -844,12 +844,12 @@ static CPU_EXECUTE( r3000 )
 			case 0x15:	/* BNEL */		invalid_instruction(r3000, op);													break;
 			case 0x16:	/* BLEZL */		invalid_instruction(r3000, op);													break;
 			case 0x17:	/* BGTZL */		invalid_instruction(r3000, op);													break;
-			case 0x20:	/* LB */		temp = RBYTE(r3000, SIMMVAL+r3000->RSVAL); if (RTREG) r3000->RTVAL = (INT8)temp; break;
-			case 0x21:	/* LH */		temp = RWORD(r3000, SIMMVAL+r3000->RSVAL); if (RTREG) r3000->RTVAL = (INT16)temp; break;
+			case 0x20:	/* LB */		temp = RBYTE(r3000, SIMMVAL+r3000->RSVAL); r3000->RTVAL = (INT8)temp; break;
+			case 0x21:	/* LH */		temp = RWORD(r3000, SIMMVAL+r3000->RSVAL); r3000->RTVAL = (INT16)temp; break;
 			case 0x22:	/* LWL */		(*r3000->lwl)(r3000, op);														break;
-			case 0x23:	/* LW */		temp = RLONG(r3000, SIMMVAL+r3000->RSVAL); if (RTREG) r3000->RTVAL = temp;		break;
-			case 0x24:	/* LBU */		temp = RBYTE(r3000, SIMMVAL+r3000->RSVAL); if (RTREG) r3000->RTVAL = (UINT8)temp; break;
-			case 0x25:	/* LHU */		temp = RWORD(r3000, SIMMVAL+r3000->RSVAL); if (RTREG) r3000->RTVAL = (UINT16)temp; break;
+			case 0x23:	/* LW */		temp = RLONG(r3000, SIMMVAL+r3000->RSVAL); r3000->RTVAL = temp;		break;
+			case 0x24:	/* LBU */		temp = RBYTE(r3000, SIMMVAL+r3000->RSVAL); r3000->RTVAL = (UINT8)temp; break;
+			case 0x25:	/* LHU */		temp = RWORD(r3000, SIMMVAL+r3000->RSVAL); r3000->RTVAL = (UINT16)temp; break;
 			case 0x26:	/* LWR */		(*r3000->lwr)(r3000, op);														break;
 			case 0x28:	/* SB */		WBYTE(r3000, SIMMVAL+r3000->RSVAL, r3000->RTVAL);								break;
 			case 0x29:	/* SH */		WWORD(r3000, SIMMVAL+r3000->RSVAL, r3000->RTVAL);								break;
@@ -875,6 +875,7 @@ static CPU_EXECUTE( r3000 )
 			case 0x3f:	/* SDC3 */		invalid_instruction(r3000, op);													break;
 			default:	/* ??? */		invalid_instruction(r3000, op);													break;
 		}
+		r3000->r[0] = 0;
 		r3000->icount--;
 
 	} while (r3000->icount > 0 || r3000->nextpc != ~0);
